@@ -1,0 +1,190 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// model autentifikasi untuk nextauth
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(STAFF)
+
+  // NextAuth required fields
+  accounts Account[]
+  sessions Session[]
+
+  // App relations
+  staff Staff?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Model untuk staff perpustakaan
+model Staff {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  transactions Transaction[]
+  bookEntries  BookEntry[]
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+// Model untuk anggota perpustakaan / peminjam
+model Member {
+  id        Int      @id @default(autoincrement())
+  studentId String   @unique
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  transactions Transaction[]
+}
+
+// Model untuk buku
+model Book {
+  id          Int      @id @default(autoincrement())
+  isbn        String?  @unique
+  title       String
+  author      String
+  publisher   String
+  publishYear Int
+  category    String
+  pageCount   Int?
+  stock       Int      @default(1)
+  shelf       String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  transactionDetails TransactionDetail[]
+  bookEntries        BookEntry[]
+}
+
+// Model untuk pencatatan buku masuk
+model BookEntry {
+  id       Int      @id @default(autoincrement())
+  date     DateTime @default(now())
+  quantity Int
+  notes    String?
+  source   String?
+
+  // Relations
+  bookId    Int
+  book      Book     @relation(fields: [bookId], references: [id])
+  staffId   Int
+  staff     Staff    @relation(fields: [staffId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Model untuk transaksi peminjaman/pengembalian
+model Transaction {
+  id         Int               @id @default(autoincrement())
+  borrowDate DateTime          @default(now())
+  returnDate DateTime?
+  dueDate    DateTime
+  status     TransactionStatus @default(BORROWED)
+  fine       Float?            @default(0)
+  notes      String?
+
+  // Relations
+  memberId           Int
+  member             Member              @relation(fields: [memberId], references: [id])
+  staffId            Int
+  staff              Staff               @relation(fields: [staffId], references: [id])
+  transactionDetails TransactionDetail[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TransactionStatus {
+  BORROWED
+  RETURNED
+  OVERDUE
+}
+
+// Model untuk detail buku yang dipinjam dalam suatu transaksi
+model TransactionDetail {
+  id            Int           @id @default(autoincrement())
+  bookCondition BookCondition @default(GOOD)
+
+  // Relations
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  bookId        Int
+  book          Book        @relation(fields: [bookId], references: [id])
+
+  @@unique([transactionId, bookId])
+}
+
+enum BookCondition {
+  GOOD
+  DAMAGED
+  LOST
+}
