@@ -314,7 +314,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/mnt/c/Users/DESKTOP-amalrivel/Documents/code/project/app_perpustakaan/generated/prisma",
+      "value": "/Users/ikhlasulamalrivel/Documents/portofolio/app_perpustakaan/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -323,12 +323,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/mnt/c/Users/DESKTOP-amalrivel/Documents/code/project/app_perpustakaan/prisma/schema.prisma",
+    "sourceFilePath": "/Users/ikhlasulamalrivel/Documents/portofolio/app_perpustakaan/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -342,11 +342,12 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "mysql://admin:12qtela0@18.142.31.188:3306/library_tracker"
+        "value": null
       }
     }
   },

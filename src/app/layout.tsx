@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/providers/theme-provider";
+import NextAuthSessionProvider from "@/providers/next-auth-session-provider";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,14 +17,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <NextAuthSessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </NextAuthSessionProvider>
       </body>
     </html>
   );
