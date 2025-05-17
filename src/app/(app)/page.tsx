@@ -1,8 +1,53 @@
+'use client';
+
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <div className="w-full flex gap-2 justify-end">
+        {session ? (
+          <>
+            <div className="mr-auto flex items-center gap-2">
+              <span>Halo, {session.user.name || session.user.email}</span>
+              {session.user.role && (
+                <span className="text-xs bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  {session.user.role}
+                </span>
+              )}
+            </div>
+            <Button 
+              variant="destructive" 
+              onClick={() => signOut({ callbackUrl: '/' })}
+            >
+              Logout
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button asChild>
+              <Link href="/auth/login">Login</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href="/auth/register">Register</Link>
+            </Button>
+          </>
+        )}
+      </div>
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
@@ -12,6 +57,15 @@ export default function Home() {
           height={38}
           priority
         />
+
+        {session && (
+          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-lg text-center">
+            <p className="font-medium">Anda berhasil login!</p>
+            <p className="text-sm mt-1">Email: {session.user.email}</p>
+            {session.user.id && <p className="text-sm">ID: {session.user.id}</p>}
+          </div>
+        )}
+
         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
